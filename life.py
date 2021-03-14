@@ -5,7 +5,9 @@ class CellList:
     def has(self, x, y):
         return x in self.cells.get(y, [])
 
-    def set(self, x, y, value=True):
+    def set(self, x, y, value=None):
+        if value is None:
+            value = not self.has(x, y)
         if value:
             row = self.cells.setdefault(y, set())
             if x not in row:

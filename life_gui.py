@@ -22,13 +22,14 @@ def center(scale):
     cell_count = SCREEN_SIZE // scale
     min_x, min_y, max_x, max_y = life.bounding_box()
 
-    basex = (cell_count - (max_x - min_x + 1)) // 2 - min_x
-    basey = (cell_count - (max_y - min_y + 1)) // 2 - min_y
+    basex = min_x - (cell_count - (max_x - min_x + 1)) // 2
+    basey = min_y - (cell_count - (max_y - min_y + 1)) // 2
     return basex, basey
 
 
 def game_loop(screen):
     running = True
+    paused = False
     scale = 20
     basex, basey = center(scale)
     interval = 1000 // FPS
@@ -44,11 +45,12 @@ def game_loop(screen):
             x = cell[0]
             y = cell[1]
             pygame.draw.rect(screen, (80, 80, 192),
-                             ((basex + x) * scale + 2, (basey + y) * scale + 2,
+                             ((x - basex) * scale + 2, (y - basey) * scale + 2,
                               scale - 3, scale - 3))
 
         pygame.display.flip()
-        life.advance()
+        if not paused:
+            life.advance()
 
         wait_time = 1
         while wait_time > 0:
@@ -68,6 +70,8 @@ def game_loop(screen):
                         basey += 2
                     elif event.key == pygame.K_DOWN:
                         basey -= 2
+                    elif event.unicode == ' ':
+                        paused = not paused
                     elif event.unicode == '+':
                         if scale < 50:
                             scale += 5
@@ -76,6 +80,12 @@ def game_loop(screen):
                             scale -= 5
                     elif event.unicode == 'c':
                         basex, basey = center(scale)
+                    break
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    mx, my = pygame.mouse.get_pos()
+                    x = mx // scale + basex
+                    y = my // scale + basey
+                    life.alive.set(x, y)
                     break
                 event = pygame.event.poll()
             if event:
