@@ -41,19 +41,19 @@ class Life:
                 y += 1
 
     def bounding_box(self):
-        min_x = min_y = max_x = max_y = None
+        minx = miny = maxx = maxy = None
         for cell in self.alive:
             x = cell[0]
             y = cell[1]
-            if min_x is None or x < min_x:
-                min_x = x
-            if min_y is None or y < min_y:
-                min_y = y
-            if max_x is None or x > max_x:
-                max_x = x
-            if max_y is None or y > max_y:
-                max_y = y
-        return (min_x or 0, min_y or 0, max_x or 0, max_y or 0)
+            if minx is None or x < minx:
+                minx = x
+            if miny is None or y < miny:
+                miny = y
+            if maxx is None or x > maxx:
+                maxx = x
+            if maxy is None or y > maxy:
+                maxy = y
+        return (minx or 0, miny or 0, maxx or 0, maxy or 0)
 
     def advance(self):
         new_alive = CellList()

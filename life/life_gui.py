@@ -10,6 +10,7 @@ life = Life()
 
 def initialize_game(pattern_file=None, x=None, y=None):
     pygame.init()
+    pygame.display.set_caption('Game of Life')
     screen = pygame.display.set_mode([SCREEN_SIZE, SCREEN_SIZE])
 
     if pattern_file:
@@ -20,10 +21,10 @@ def initialize_game(pattern_file=None, x=None, y=None):
 
 def center(scale):
     cell_count = SCREEN_SIZE // scale
-    min_x, min_y, max_x, max_y = life.bounding_box()
+    minx, miny, maxx, maxy = life.bounding_box()
 
-    basex = min_x - (cell_count - (max_x - min_x + 1)) // 2
-    basey = min_y - (cell_count - (max_y - min_y + 1)) // 2
+    basex = minx - (cell_count - (maxx - minx + 1)) // 2
+    basey = miny - (cell_count - (maxy - miny + 1)) // 2
     return basex, basey
 
 
@@ -63,15 +64,19 @@ def game_loop(screen):
                     if event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key == pygame.K_LEFT:
-                        basex += 2
-                    elif event.key == pygame.K_RIGHT:
                         basex -= 2
+                    elif event.key == pygame.K_RIGHT:
+                        basex += 2
                     elif event.key == pygame.K_UP:
-                        basey += 2
-                    elif event.key == pygame.K_DOWN:
                         basey -= 2
+                    elif event.key == pygame.K_DOWN:
+                        basey += 2
                     elif event.unicode == ' ':
                         paused = not paused
+                        if paused:
+                            pygame.display.set_caption('Game of Life (paused)')
+                        else:
+                            pygame.display.set_caption('Game of Life')
                     elif event.unicode == '+':
                         if scale < 50:
                             scale += 5
@@ -98,5 +103,11 @@ def game_loop(screen):
 if __name__ == '__main__':
     pattern_file = sys.argv[1] if len(sys.argv) > 1 else None
     screen = initialize_game(pattern_file)
+    print('''
+Press: Arrows to scroll
+       Space to pause/resume the simulation
+       +/- to zoom in/out
+       c to re-center
+       mouse click to toggle the state of a cell''')
     game_loop(screen)
     pygame.quit()
