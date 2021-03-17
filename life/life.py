@@ -40,9 +40,12 @@ class Life:
                     i = line.find('*', i + 1)
                 y += 1
 
+    def living_cells(self):
+        return self.alive.__iter__()
+
     def bounding_box(self):
         minx = miny = maxx = maxy = None
-        for cell in self.alive:
+        for cell in self.living_cells():
             x = cell[0]
             y = cell[1]
             if minx is None or x < minx:
@@ -56,12 +59,16 @@ class Life:
         return (minx or 0, miny or 0, maxx or 0, maxy or 0)
 
     def advance(self):
+        processed = CellList()
         new_alive = CellList()
-        for cell in self.alive:
+        for cell in self.living_cells():
             x = cell[0]
             y = cell[1]
             for i in range(-1, 2):
                 for j in range(-1, 2):
+                    if (x + i, y + j) in processed:
+                        continue
+                    processed.set(x + i, y + j, True)
                     if self.advance_cell(x + i, y + j):
                         new_alive.set(x + i, y + j, True)
         self.alive = new_alive

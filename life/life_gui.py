@@ -108,6 +108,7 @@ Press: Arrows to scroll
        Space to pause/resume the simulation
        +/- to zoom in/out
        c to re-center
-       mouse click to toggle the state of a cell''')
+       mouse click to toggle the state of a cell
+       Esc to exit''')
     game_loop(screen)
     pygame.quit()
