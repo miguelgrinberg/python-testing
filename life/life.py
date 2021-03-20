@@ -28,17 +28,41 @@ class CellList:
 
 
 class Life:
-    def __init__(self):
+    def __init__(self, survival=None, birth=None):
+        self.survival = survival or [2, 3]
+        self.birth = birth or [3]
         self.alive = CellList()
 
-    def load(self, filename, x, y):
+    def load(self, filename):
         with open(filename, "rt") as f:
-            for line in f.readlines():
-                i = line.find('*')
-                while i != -1:
-                    self.alive.set(x + i, y, True)
-                    i = line.find('*', i + 1)
-                y += 1
+            header = f.readline()
+            if header == '#Life 1.05\n':
+                x = y = 0
+                for line in f.readlines():
+                    if line.startswith('#D'):
+                        continue
+                    elif line.startswith('#N'):
+                        self.survival = [2, 3]
+                        self.birth = [3]
+                    elif line.startswith('#R'):
+                        self.survival, self.birth = [
+                            [int(n) for n in i]
+                            for i in line[2:].strip().split('/', 1)]
+                    elif line.startswith('#P'):
+                        x, y = [int(i) for i in line[2:].strip().split(' ', 1)]
+                    else:
+                        i = line.find('*')
+                        while i != -1:
+                            self.alive.set(x + i, y, True)
+                            i = line.find('*', i + 1)
+                        y += 1
+            elif header == '#Life 1.06\n':
+                for line in f.readlines():
+                    if not line.startswith('#'):
+                        x, y = [int(i) for i in line.strip().split(' ', 1)]
+                        self.cells.set(x, y, True)
+            else:
+                raise RuntimeError('Unknown file format')
 
     def living_cells(self):
         return self.alive.__iter__()
@@ -81,13 +105,6 @@ class Life:
                     neighbors += 1 if self.alive.has(x + i, y + j) else 0
 
         if self.alive.has(x, y):
-            if neighbors < 2:
-                return False
-            elif neighbors > 3:
-                return False
-            else:
-                return True
-        elif neighbors == 3:
-            return True
+            return neighbors in self.survival
         else:
-            return False
+            return neighbors in self.birth

@@ -8,13 +8,13 @@ FPS = 5
 life = Life()
 
 
-def initialize_game(pattern_file=None, x=None, y=None):
+def initialize_game(pattern_file=None):
     pygame.init()
     pygame.display.set_caption('Game of Life')
     screen = pygame.display.set_mode([SCREEN_SIZE, SCREEN_SIZE])
 
     if pattern_file:
-        life.load(pattern_file, None or 0, None or 0)
+        life.load(pattern_file)
 
     return screen
 
