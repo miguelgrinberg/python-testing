@@ -33,6 +33,11 @@ class Life:
         self.birth = birth or [3]
         self.alive = CellList()
 
+    def rules_str(self):
+        survival_rule = "".join([str(n) for n in self.survival])
+        birth_rule = "".join([str(n) for n in self.birth])
+        return f'{survival_rule}/{birth_rule}'
+
     def load(self, filename):
         with open(filename, "rt") as f:
             header = f.readline()
@@ -60,9 +65,12 @@ class Life:
                 for line in f.readlines():
                     if not line.startswith('#'):
                         x, y = [int(i) for i in line.strip().split(' ', 1)]
-                        self.cells.set(x, y, True)
+                        self.alive.set(x, y, True)
             else:
                 raise RuntimeError('Unknown file format')
+
+    def toggle(self, x, y):
+        self.alive.set(x, y)
 
     def living_cells(self):
         return self.alive.__iter__()

@@ -10,12 +10,12 @@ life = Life()
 
 def initialize_game(pattern_file=None):
     pygame.init()
-    pygame.display.set_caption('Game of Life')
     screen = pygame.display.set_mode([SCREEN_SIZE, SCREEN_SIZE])
 
     if pattern_file:
         life.load(pattern_file)
 
+    pygame.display.set_caption(f'Game of Life [{life.rules_str()}]')
     return screen
 
 
@@ -76,7 +76,8 @@ def game_loop(screen):
                         if paused:
                             pygame.display.set_caption('Game of Life (paused)')
                         else:
-                            pygame.display.set_caption('Game of Life')
+                            pygame.display.set_caption(
+                                f'Game of Life [{life.rules_str()}]')
                     elif event.unicode == '+':
                         if scale < 50:
                             scale += 5
@@ -90,7 +91,7 @@ def game_loop(screen):
                     mx, my = pygame.mouse.get_pos()
                     x = mx // scale + basex
                     y = my // scale + basey
-                    life.alive.set(x, y)
+                    life.toggle(x, y)
                     break
                 event = pygame.event.poll()
             if event:
