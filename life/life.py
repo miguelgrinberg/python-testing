@@ -1,11 +1,15 @@
 class CellList:
+    """Maintain a list of (x, y) cells."""
+
     def __init__(self):
         self.cells = {}
 
     def has(self, x, y):
+        """Check if a cell exists in this list."""
         return x in self.cells.get(y, [])
 
     def set(self, x, y, value=None):
+        """Add, remove or toggle a cell in this list."""
         if value is None:
             value = not self.has(x, y)
         if value:
@@ -22,23 +26,28 @@ class CellList:
                     del self.cells[y]
 
     def __iter__(self):
+        """Iterator over the cells in this list."""
         for y in self.cells:
             for x in self.cells[y]:
                 yield (x, y)
 
 
 class Life:
-    def __init__(self, survival=None, birth=None):
-        self.survival = survival or [2, 3]
-        self.birth = birth or [3]
+    """Game of Life simulation."""
+
+    def __init__(self, survival=[2, 3], birth=[3]):
+        self.survival = survival
+        self.birth = birth 
         self.alive = CellList()
 
     def rules_str(self):
+        """Return the rules of the game as a printable string."""
         survival_rule = "".join([str(n) for n in self.survival])
         birth_rule = "".join([str(n) for n in self.birth])
         return f'{survival_rule}/{birth_rule}'
 
     def load(self, filename):
+        """Load a pattern from a file into the game grid."""
         with open(filename, "rt") as f:
             header = f.readline()
             if header == '#Life 1.05\n':
@@ -70,12 +79,15 @@ class Life:
                 raise RuntimeError('Unknown file format')
 
     def toggle(self, x, y):
+        """Toggle a cell in the grid."""
         self.alive.set(x, y)
 
     def living_cells(self):
+        """Iterate over the living cells."""
         return self.alive.__iter__()
 
     def bounding_box(self):
+        """Return the bounding box that includes all living cells."""
         minx = miny = maxx = maxy = None
         for cell in self.living_cells():
             x = cell[0]
@@ -91,6 +103,7 @@ class Life:
         return (minx or 0, miny or 0, maxx or 0, maxy or 0)
 
     def advance(self):
+        """Advance the simulation by one time unit."""
         processed = CellList()
         new_alive = CellList()
         for cell in self.living_cells():
@@ -101,11 +114,12 @@ class Life:
                     if (x + i, y + j) in processed:
                         continue
                     processed.set(x + i, y + j, True)
-                    if self.advance_cell(x + i, y + j):
+                    if self._advance_cell(x + i, y + j):
                         new_alive.set(x + i, y + j, True)
         self.alive = new_alive
 
-    def advance_cell(self, x, y):
+    def _advance_cell(self, x, y):
+        """Calculate the new state of a cell."""
         neighbors = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
