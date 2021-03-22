@@ -11,51 +11,53 @@ from parameterized import parameterized
 class TestCellList(unittest.TestCase):
     def test_empty(self):
         c = CellList()
+        assert list(c) == []
         assert c.cells == {}
 
     def test_set_true(self):
         c = CellList()
         c.set(1, 2, True)
         assert c.has(1, 2)
+        assert list(c) == [(1, 2)]
         assert c.cells == {2: {1}}
         c.set(500, 600, True)
         assert c.has(1, 2) and c.has(500, 600)
+        assert list(c) == [(1, 2), (500, 600)]
         assert c.cells == {2: {1}, 600: {500}}
         c.set(1, 2, True)
         assert c.has(1, 2) and c.has(500, 600)
+        assert list(c) == [(1, 2), (500, 600)]
         assert c.cells == {2: {1}, 600: {500}}
 
     def test_set_false(self):
         c = CellList()
         c.set(1, 2, False)
         assert not c.has(1, 2)
+        assert list(c) == []
         assert c.cells == {}
         c.set(1, 2, True)
         c.set(1, 2, False)
         assert not c.has(1, 2)
+        assert list(c) == []
         assert c.cells == {}
         c.set(1, 2, True)
         c.set(3, 2, True)
         c.set(1, 2, False)
         assert not c.has(1, 2)
         assert c.has(3, 2)
+        assert list(c) == [(3, 2)]
         assert c.cells == {2: {3}}
 
     def test_set_default(self):
         c = CellList()
         c.set(1, 2)
         assert c.has(1, 2)
+        assert list(c) == [(1, 2)]
         assert c.cells == {2: {1}}
         c.set(1, 2)
         assert not c.has(1, 2)
-        assert c.cells == {}
-
-    def test_iter(self):
-        c = CellList()
         assert list(c) == []
-        c.set(1, 2, True)
-        c.set(500, 600, True)
-        assert list(c) == [(1, 2), (500, 600)]
+        assert c.cells == {}
 
 
 class TestLife(unittest.TestCase):
