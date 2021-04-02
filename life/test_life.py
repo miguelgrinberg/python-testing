@@ -66,20 +66,17 @@ class TestLife(unittest.TestCase):
         assert list(life.living_cells()) == []
         assert life.rules_str() == '34/478'
 
-    def test_load_life_1_05(self):
+    @parameterized.expand([('pattern1.txt',), ('pattern2.txt',)])
+    def test_load(self, pattern):
         life = Life()
-        life.load('pattern1.txt')
+        life.load(pattern)
         assert life.survival == [2, 3]
         assert life.birth == [3]
-        assert list(life.living_cells()) == [(10, 10), (11, 11)]
-        assert life.bounding_box() == (10, 10, 11, 11)
+        assert set(life.living_cells()) == {
+            (10, 10), (11, 11), (15, 10), (17, 10)}
+        assert life.bounding_box() == (10, 10, 17, 11)
 
-    def test_load_life_1_06(self):
-        life = Life()
-        life.load('pattern2.txt')
-        assert life.bounding_box() == (10, 10, 11, 11)
-
-    def test_load_life_1_05_custom_rules(self):
+    def test_load_life_custom_rules(self):
         life = Life()
         life.load('pattern3.txt')
         assert life.survival == [3, 4]
@@ -92,19 +89,19 @@ class TestLife(unittest.TestCase):
         with pytest.raises(RuntimeError):
             life.load('pattern4.txt')
 
-    def test_bounding_box(self):
+    def test_toggle(self):
         life = Life()
-        life.toggle(0, 0)
-        life.toggle(-10, 1)
-        life.toggle(100, 42)
-        life.toggle(0, -1000)
-        assert life.bounding_box() == (-10, -1000, 100, 42)
+        life.toggle(5, 5)
+        assert list(life.living_cells()) == [(5, 5)]
+        life.toggle(5, 6)
+        life.toggle(5, 5)
+        assert list(life.living_cells()) == [(5, 6)]
 
     @parameterized.expand(itertools.product(
         [[2, 3], [4]],  # two different survival rules
         [[3], [3, 4]],  # two different birth rules
         [True, False],  # two possible states for the cell
-        range(0, 9),    # nine number of possible nightbors
+        range(0, 9),    # nine number of possible neighbors
     ))
     def test_advance_cell(self, survival, birth, alive, num_neighbors):
         life = Life(survival, birth)
@@ -119,28 +116,32 @@ class TestLife(unittest.TestCase):
             life.toggle(*n)
 
         new_state = life._advance_cell(0, 0)
-        if alive and new_state:
-            assert num_neighbors in survival
-        elif alive and not new_state:
-            assert num_neighbors not in survival
-        elif not alive and new_state:
-            assert num_neighbors in birth
-        elif not alive and not new_state:
-            assert num_neighbors not in birth
+        if alive:
+            # survival rule
+            if num_neighbors in survival:
+                assert new_state is True
+            else:
+                assert new_state is False
+        else:
+            # birth rule
+            if num_neighbors in birth:
+                assert new_state is True
+            else:
+                assert new_state is False
 
     @mock.patch.object(Life, '_advance_cell')
     def test_advance_false(self, mock_advance_cell):
         mock_advance_cell.return_value = False
         life = Life()
-        life.toggle(0, 0)
-        life.toggle(2, 0)
-        life.toggle(100, 100)
+        life.toggle(10, 10)
+        life.toggle(12, 10)
+        life.toggle(20, 20)
         life.advance()
 
         # there should be exactly 24 calls to _advance_cell:
-        # - 9 around the (0, 0) cell
-        # - 6 around the (2, 0) cell (3 were already processed by (0, 0))
-        # - 9 around the (100, 100) cell
+        # - 9 around the (10, 10) cell
+        # - 6 around the (12, 10) cell (3 were already processed by (10, 10))
+        # - 9 around the (20, 20) cell
         assert mock_advance_cell.call_count == 24
         assert list(life.living_cells()) == []
 
@@ -148,24 +149,24 @@ class TestLife(unittest.TestCase):
     def test_advance_true(self, mock_advance_cell):
         mock_advance_cell.return_value = True
         life = Life()
-        life.toggle(0, 0)
-        life.toggle(1, 0)
-        life.toggle(100, 100)
+        life.toggle(10, 10)
+        life.toggle(11, 10)
+        life.toggle(20, 20)
         life.advance()
 
         # there should be exactly 24 calls to _advance_cell:
-        # - 9 around the (0, 0) cell
-        # - 3 around the (1, 0) cell (3 were already processed by (0, 0))
-        # - 9 around the (100, 100) cell
+        # - 9 around the (10, 10) cell
+        # - 3 around the (11, 10) cell (3 were already processed by (10, 10))
+        # - 9 around the (20, 20) cell
         assert mock_advance_cell.call_count == 21
 
         # since the mocked advance_cell returns True in all cases, all 24
         # cells must be alive
         assert set(life.living_cells()) == {
-            (-1, -1), (0, -1), (1, -1), (2, -1),
-            (-1, 0), (0, 0), (1, 0), (2, 0),
-            (-1, 1), (0, 1), (1, 1), (2, 1),
-            (99, 99), (100, 99), (101, 99),
-            (99, 100), (100, 100), (101, 100),
-            (99, 101), (100, 101), (101, 101),
+            (9, 9), (10, 9), (11, 9), (12, 9),
+            (9, 10), (10, 10), (11, 10), (12, 10),
+            (9, 11), (10, 11), (11, 11), (12, 11),
+            (19, 19), (20, 19), (21, 19),
+            (19, 20), (20, 20), (21, 20),
+            (19, 21), (20, 21), (21, 21),
         }

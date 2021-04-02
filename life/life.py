@@ -37,7 +37,7 @@ class Life:
 
     def __init__(self, survival=[2, 3], birth=[3]):
         self.survival = survival
-        self.birth = birth 
+        self.birth = birth
         self.alive = CellList()
 
     def rules_str(self):
